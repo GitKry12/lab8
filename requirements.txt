@@ -4,3 +4,4 @@ psycopg[binary]>=3.2,<4
 alembic>=1.16,<2
 pydantic>=2.11,<3
 pydantic-settings>=2,<3
+strawberry-graphql[fastapi]==0.341.2
