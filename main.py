@@ -35,11 +35,14 @@ def list_courses(
     db: SessionDep,
     p: Annotated[dict[str, int], Depends(pagination)],
     is_elective: bool | None = None,
+    level: str | None = None,
     sort: Literal["popular", "title"] = "popular",
 ):
     stmt = select(Course)
     if is_elective is not None:
         stmt = stmt.where(Course.is_elective == is_elective)
+    if level is not None:
+        stmt = stmt.where(Course.level == level)
     order = Course.title if sort == "title" else Course.likes.desc()
     stmt = stmt.order_by(order, Course.id).offset(p["offset"]).limit(p["limit"])
     return db.scalars(stmt).all()
