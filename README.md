@@ -2,6 +2,8 @@
 
 Каталог курсов на FastAPI, SQLAlchemy, PostgreSQL и Strawberry. REST и GraphQL используют одну базу и общий `services.py`. Фронтенд на Next.js показывает учебный план студента двумя способами.
 
+Репозитории: [backend — lab8](https://github.com/GitKry12/lab8) · [frontend — lab8frontend](https://github.com/GitKry12/lab8frontend).
+
 ## 1. Запуск с нуля
 
 Проверено 12.11.2026 на Windows: Python 3.12, PostgreSQL 17.4, SQLAlchemy 2.1.8, Strawberry 0.341.2, FastAPI 0.162.5. Для фронтенда — Node.js 24.21, Next.js 16.4.6 и React 19.3.1.
