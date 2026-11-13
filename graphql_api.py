@@ -149,8 +149,8 @@ class Mutation:
             enrollment = services.enroll(info.context.db, str(input.course_id), int(input.student_id))
         except services.ServiceError as error:
             return EnrollPayload(user_errors=as_user_errors(error))
-        info.context.enrollments_of_course.clear(enrollment.course_id)
-        info.context.enrollments_of_student.clear(enrollment.student_id)
+        info.context.enrollments_of_course.clear_all()
+        info.context.enrollments_of_student.clear_all()
         return EnrollPayload(enrollment=enrollment)
 
     @strawberry.mutation
@@ -159,7 +159,7 @@ class Mutation:
             course = services.like_course(info.context.db, str(id))
         except services.ServiceError as error:
             return LikePayload(user_errors=as_user_errors(error))
-        info.context.course.clear(course.id)
+        info.context.course.clear_all()
         return LikePayload(course=course)
 
 
