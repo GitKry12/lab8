@@ -1,0 +1,1056 @@
+{
+  "lazy_3": [
+    {
+      "rows": 3,
+      "sql": 7
+    },
+    {
+      "rows": 6,
+      "sql": 7
+    }
+  ],
+  "lazy_20": [
+    {
+      "rows": 20,
+      "sql": 27
+    },
+    {
+      "rows": 20,
+      "sql": 24
+    }
+  ],
+  "experiment_1": [
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": null,
+        "errors": [
+          {
+            "message": "Cannot query field 'titel' on type 'Course'. Did you mean 'title', 'level', or 'likes'?",
+            "locations": [
+              {
+                "line": 1,
+                "column": 30
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": null,
+        "errors": [
+          {
+            "message": "Unknown argument 'is_elective' on field 'Query.courses'. Did you mean 'isElective'?",
+            "locations": [
+              {
+                "line": 1,
+                "column": 11
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "rest_missing_course": {
+    "status": 404,
+    "content_type": "application/problem+json",
+    "body": {
+      "type": "https://example.com/problems/course-not-found",
+      "title": "Course not found",
+      "status": 404,
+      "instance": "/courses/no-such",
+      "detail": "Course not found"
+    }
+  },
+  "experiment_2": {
+    "required": [
+      {
+        "status": 200,
+        "sql": "1",
+        "body": {
+          "data": null,
+          "errors": [
+            {
+              "message": "Cannot return null for non-nullable field Query.course.",
+              "locations": [
+                {
+                  "line": 1,
+                  "column": 3
+                }
+              ],
+              "path": [
+                "course"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "sql": "2",
+        "body": {
+          "data": null,
+          "errors": [
+            {
+              "message": "Cannot return null for non-nullable field Query.course.",
+              "locations": [
+                {
+                  "line": 1,
+                  "column": 41
+                }
+              ],
+              "path": [
+                "b"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "nullable": {
+      "status": 200,
+      "sql": "2",
+      "body": {
+        "data": {
+          "a": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "b": null
+        }
+      }
+    }
+  },
+  "experiment_3": {
+    "before": {
+      "status": 200,
+      "sql": "1",
+      "body": {
+        "data": {
+          "course": {
+            "likes": 11
+          }
+        }
+      }
+    },
+    "get_mutation": {
+      "status": 400,
+      "sql": "0",
+      "body": "mutations are not allowed when using GET"
+    },
+    "after_get": {
+      "status": 200,
+      "sql": "1",
+      "body": {
+        "data": {
+          "course": {
+            "likes": 11
+          }
+        }
+      }
+    },
+    "post_mutation": {
+      "status": 200,
+      "sql": "1",
+      "body": {
+        "data": {
+          "likeCourse": {
+            "course": {
+              "likes": 12
+            },
+            "userErrors": []
+          }
+        }
+      }
+    }
+  },
+  "enroll_success": {
+    "status": 200,
+    "sql": "2",
+    "body": {
+      "data": {
+        "enroll": {
+          "enrollment": {
+            "id": "7",
+            "course": {
+              "title": "Web Security Essentials"
+            }
+          },
+          "userErrors": []
+        }
+      }
+    }
+  },
+  "enroll_duplicate": {
+    "status": 200,
+    "sql": "1",
+    "body": {
+      "data": {
+        "enroll": {
+          "enrollment": null,
+          "userErrors": [
+            {
+              "code": "ALREADY_ENROLLED",
+              "message": "Student is already enrolled in this course"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "rest_404": {
+    "body": {
+      "type": "about:blank",
+      "title": "Not Found",
+      "status": 404,
+      "instance": "/not-a-route"
+    },
+    "content_type": "application/problem+json",
+    "allow": null
+  },
+  "rest_405": {
+    "body": {
+      "type": "about:blank",
+      "title": "Method Not Allowed",
+      "status": 405,
+      "instance": "/courses"
+    },
+    "content_type": "application/problem+json",
+    "allow": "GET"
+  },
+  "loaders_3": [
+    {
+      "rows": 3,
+      "sql": 3
+    },
+    {
+      "rows": 6,
+      "sql": 3
+    }
+  ],
+  "loaders_20": [
+    {
+      "rows": 20,
+      "sql": 3
+    },
+    {
+      "rows": 20,
+      "sql": 3
+    }
+  ],
+  "experiment_5": {
+    "correct": {
+      "status": 200,
+      "sql": "2",
+      "body": {
+        "data": {
+          "enrollments": [
+            {
+              "id": "1",
+              "course": {
+                "title": "Modern Frontend: React & Next.js"
+              }
+            },
+            {
+              "id": "2",
+              "course": {
+                "title": "AI/LLM Integration"
+              }
+            },
+            {
+              "id": "3",
+              "course": {
+                "title": "Modern Frontend: React & Next.js"
+              }
+            },
+            {
+              "id": "4",
+              "course": {
+                "title": "Backend Foundations: FastAPI"
+              }
+            },
+            {
+              "id": "5",
+              "course": {
+                "title": "AI/LLM Integration"
+              }
+            },
+            {
+              "id": "6",
+              "course": {
+                "title": "AI/LLM Integration"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "broken": [
+      {
+        "status": 200,
+        "sql": "2",
+        "body": {
+          "data": null,
+          "errors": [
+            {
+              "message": "Received wrong number of results in dataloader, expected: 3, received: 6",
+              "locations": [
+                {
+                  "line": 1,
+                  "column": 19
+                }
+              ],
+              "path": [
+                "students",
+                0,
+                "enrollments"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "sql": "2",
+        "body": {
+          "data": {
+            "enrollments": [
+              {
+                "id": "1",
+                "course": {
+                  "title": "Modern Frontend: React & Next.js"
+                }
+              },
+              {
+                "id": "2",
+                "course": {
+                  "title": "Backend Foundations: FastAPI"
+                }
+              },
+              {
+                "id": "3",
+                "course": {
+                  "title": "Modern Frontend: React & Next.js"
+                }
+              },
+              {
+                "id": "4",
+                "course": {
+                  "title": "AI/LLM Integration"
+                }
+              },
+              {
+                "id": "5",
+                "course": {
+                  "title": "Backend Foundations: FastAPI"
+                }
+              },
+              {
+                "id": "6",
+                "course": {
+                  "title": "Backend Foundations: FastAPI"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "protection_queries": [
+    "query Cycle { student(id: 2) { enrollments { student { enrollments { student { enrollments { id } } } } } } }",
+    "{ a1: course(id: \"api-design\") { title } a2: course(id: \"api-design\") { title } a3: course(id: \"api-design\") { title } a4: course(id: \"api-design\") { title } a5: course(id: \"api-design\") { title } a6: course(id: \"api-design\") { title } a7: course(id: \"api-design\") { title } a8: course(id: \"api-design\") { title } a9: course(id: \"api-design\") { title } a10: course(id: \"api-design\") { title } a11: course(id: \"api-design\") { title } a12: course(id: \"api-design\") { title } }",
+    "{ courses(limit: -1) { id } }",
+    "{ student(id: \"abc\") { name } }",
+    "{ student(id: \"99999999999999999999\") { name } }",
+    "{ __schema { queryType { name } } }"
+  ],
+  "unprotected": [
+    {
+      "status": 200,
+      "sql": "3",
+      "body": {
+        "data": {
+          "student": {
+            "enrollments": [
+              {
+                "student": {
+                  "enrollments": [
+                    {
+                      "student": {
+                        "enrollments": [
+                          {
+                            "id": "3"
+                          },
+                          {
+                            "id": "4"
+                          },
+                          {
+                            "id": "5"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "student": {
+                        "enrollments": [
+                          {
+                            "id": "3"
+                          },
+                          {
+                            "id": "4"
+                          },
+                          {
+                            "id": "5"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "student": {
+                        "enrollments": [
+                          {
+                            "id": "3"
+                          },
+                          {
+                            "id": "4"
+                          },
+                          {
+                            "id": "5"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "student": {
+                  "enrollments": [
+                    {
+                      "student": {
+                        "enrollments": [
+                          {
+                            "id": "3"
+                          },
+                          {
+                            "id": "4"
+                          },
+                          {
+                            "id": "5"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "student": {
+                        "enrollments": [
+                          {
+                            "id": "3"
+                          },
+                          {
+                            "id": "4"
+                          },
+                          {
+                            "id": "5"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "student": {
+                        "enrollments": [
+                          {
+                            "id": "3"
+                          },
+                          {
+                            "id": "4"
+                          },
+                          {
+                            "id": "5"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "student": {
+                  "enrollments": [
+                    {
+                      "student": {
+                        "enrollments": [
+                          {
+                            "id": "3"
+                          },
+                          {
+                            "id": "4"
+                          },
+                          {
+                            "id": "5"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "student": {
+                        "enrollments": [
+                          {
+                            "id": "3"
+                          },
+                          {
+                            "id": "4"
+                          },
+                          {
+                            "id": "5"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "student": {
+                        "enrollments": [
+                          {
+                            "id": "3"
+                          },
+                          {
+                            "id": "4"
+                          },
+                          {
+                            "id": "5"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "sql": "12",
+      "body": {
+        "data": {
+          "a1": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "a2": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "a3": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "a4": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "a5": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "a6": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "a7": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "a8": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "a9": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "a10": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "a11": {
+            "title": "API Design: REST vs GraphQL"
+          },
+          "a12": {
+            "title": "API Design: REST vs GraphQL"
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "sql": "1",
+      "body": {
+        "data": null,
+        "errors": [
+          {
+            "message": "(psycopg.errors.InvalidRowCountInLimitClause) LIMIT must not be negative\n[SQL: SELECT courses.id, courses.title, courses.description, courses.credits, courses.is_elective, courses.likes, courses.level \nFROM courses ORDER BY courses.likes DESC, courses.id \n LIMIT %(param_1)s::INTEGER]\n[parameters: {'param_1': -1}]\n(Background on this error at: https://sqlalche.me/e/21/9h9h)",
+            "locations": [
+              {
+                "line": 1,
+                "column": 3
+              }
+            ],
+            "path": [
+              "courses"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": {
+          "student": null
+        },
+        "errors": [
+          {
+            "message": "invalid literal for int() with base 10: 'abc'",
+            "locations": [
+              {
+                "line": 1,
+                "column": 3
+              }
+            ],
+            "path": [
+              "student"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "sql": "1",
+      "body": {
+        "data": {
+          "student": null
+        },
+        "errors": [
+          {
+            "message": "(psycopg.errors.NumericValueOutOfRange) bigint out of range\n[SQL: SELECT students.id, students.name, students.email \nFROM students \nWHERE students.id = %(pk_1)s::BIGINT]\n[parameters: {'pk_1': 99999999999999999999}]\n(Background on this error at: https://sqlalche.me/e/21/9h9h)",
+            "locations": [
+              {
+                "line": 1,
+                "column": 3
+              }
+            ],
+            "path": [
+              "student"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": {
+          "__schema": {
+            "queryType": {
+              "name": "Query"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "flood_query": "mutation { a1: likeCourse(id: \"api-design\") { course { likes } } a2: likeCourse(id: \"api-design\") { course { likes } } a3: likeCourse(id: \"api-design\") { course { likes } } a4: likeCourse(id: \"api-design\") { course { likes } } a5: likeCourse(id: \"api-design\") { course { likes } } a6: likeCourse(id: \"api-design\") { course { likes } } a7: likeCourse(id: \"api-design\") { course { likes } } a8: likeCourse(id: \"api-design\") { course { likes } } a9: likeCourse(id: \"api-design\") { course { likes } } a10: likeCourse(id: \"api-design\") { course { likes } } a11: likeCourse(id: \"api-design\") { course { likes } } a12: likeCourse(id: \"api-design\") { course { likes } } }",
+  "flood_unprotected": {
+    "status": 200,
+    "sql": "12",
+    "body": {
+      "data": {
+        "a1": {
+          "course": {
+            "likes": 12
+          }
+        },
+        "a2": {
+          "course": {
+            "likes": 13
+          }
+        },
+        "a3": {
+          "course": {
+            "likes": 14
+          }
+        },
+        "a4": {
+          "course": {
+            "likes": 15
+          }
+        },
+        "a5": {
+          "course": {
+            "likes": 16
+          }
+        },
+        "a6": {
+          "course": {
+            "likes": 17
+          }
+        },
+        "a7": {
+          "course": {
+            "likes": 18
+          }
+        },
+        "a8": {
+          "course": {
+            "likes": 19
+          }
+        },
+        "a9": {
+          "course": {
+            "likes": 20
+          }
+        },
+        "a10": {
+          "course": {
+            "likes": 21
+          }
+        },
+        "a11": {
+          "course": {
+            "likes": 22
+          }
+        },
+        "a12": {
+          "course": {
+            "likes": 23
+          }
+        }
+      }
+    }
+  },
+  "protected": [
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": null,
+        "errors": [
+          {
+            "message": "'Cycle' exceeds maximum operation depth of 5",
+            "locations": [
+              {
+                "line": 1,
+                "column": 94
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": null,
+        "errors": [
+          {
+            "message": "12 aliases found. Allowed: 10"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": null,
+        "errors": [
+          {
+            "message": "limit must be between 1 and 100",
+            "locations": [
+              {
+                "line": 1,
+                "column": 3
+              }
+            ],
+            "path": [
+              "courses"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": {
+          "student": null
+        },
+        "errors": [
+          {
+            "message": "Invalid ID: 'abc'",
+            "locations": [
+              {
+                "line": 1,
+                "column": 3
+              }
+            ],
+            "path": [
+              "student"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "sql": "1",
+      "body": {
+        "data": {
+          "student": null
+        },
+        "errors": [
+          {
+            "message": "Unexpected error.",
+            "locations": [
+              {
+                "line": 1,
+                "column": 3
+              }
+            ],
+            "path": [
+              "student"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": {
+          "__schema": {
+            "queryType": {
+              "name": "Query"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "flood_protected": {
+    "status": 200,
+    "sql": "0",
+    "body": {
+      "data": null,
+      "errors": [
+        {
+          "message": "12 aliases found. Allowed: 10"
+        }
+      ]
+    }
+  },
+  "experiment_7": [
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": null,
+        "errors": [
+          {
+            "message": "GraphQL introspection has been disabled, but the requested query contained the field '__schema'.",
+            "locations": [
+              {
+                "line": 1,
+                "column": 3
+              }
+            ]
+          },
+          {
+            "message": "GraphQL introspection has been disabled, but the requested query contained the field 'queryType'.",
+            "locations": [
+              {
+                "line": 1,
+                "column": 14
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "sql": "1",
+      "body": {
+        "data": {
+          "course": {
+            "title": "API Design: REST vs GraphQL"
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": null,
+        "errors": [
+          {
+            "message": "Cannot query field 'cours' on type 'Query'. Did you mean 'course' or 'courses'?",
+            "locations": [
+              {
+                "line": 1,
+                "column": 3
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "depth_2_legitimate_query": [
+    {
+      "status": 200,
+      "sql": "0",
+      "body": {
+        "data": null,
+        "errors": [
+          {
+            "message": "'anonymous' exceeds maximum operation depth of 2",
+            "locations": [
+              {
+                "line": 1,
+                "column": 48
+              }
+            ]
+          },
+          {
+            "message": "'anonymous' exceeds maximum operation depth of 2",
+            "locations": [
+              {
+                "line": 1,
+                "column": 54
+              }
+            ]
+          },
+          {
+            "message": "'anonymous' exceeds maximum operation depth of 2",
+            "locations": [
+              {
+                "line": 1,
+                "column": 62
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "depth_4_allowed": {
+    "status": 200,
+    "sql": "4",
+    "body": {
+      "data": {
+        "student": {
+          "enrollments": [
+            {
+              "course": {
+                "enrollments": [
+                  {
+                    "id": "1"
+                  },
+                  {
+                    "id": "3"
+                  }
+                ]
+              }
+            },
+            {
+              "course": {
+                "enrollments": [
+                  {
+                    "id": "4"
+                  }
+                ]
+              }
+            },
+            {
+              "course": {
+                "enrollments": [
+                  {
+                    "id": "2"
+                  },
+                  {
+                    "id": "5"
+                  },
+                  {
+                    "id": "6"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "mutation_cache_refresh": {
+    "status": 200,
+    "sql": "5",
+    "body": {
+      "data": {
+        "a": {
+          "enrollment": {
+            "student": {
+              "enrollments": [
+                {
+                  "id": "6"
+                },
+                {
+                  "id": "7"
+                }
+              ]
+            }
+          },
+          "userErrors": []
+        },
+        "b": {
+          "enrollment": {
+            "student": {
+              "enrollments": [
+                {
+                  "id": "6"
+                },
+                {
+                  "id": "7"
+                },
+                {
+                  "id": "8"
+                }
+              ]
+            }
+          },
+          "userErrors": []
+        }
+      }
+    }
+  },
+  "measurement": {
+    "REST": {
+      "requests": 5,
+      "rounds": 2,
+      "bytes": 1145,
+      "sql": 5
+    },
+    "GraphQL": {
+      "requests": 1,
+      "rounds": 1,
+      "bytes": 339,
+      "sql": 3
+    }
+  }
+}
