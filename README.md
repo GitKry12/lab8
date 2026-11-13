@@ -1,24 +1,116 @@
 # Course Catalog API
 
-A standalone FastAPI backend for the six-course catalog, with filtering, sorting, pagination, and interactive API documentation.
+FastAPI хранит курсы, студентов и записи на курсы в PostgreSQL. Файл `models.py` описывает таблицы, `schemas.py` задаёт формат JSON, а две миграции Alembic воспроизводят схему. Лабораторная 7 продолжает репозиторий API из предыдущей работы.
 
-## Run locally
+## Запуск
+
+Проверено на Windows с Python 3.12, PostgreSQL 17.4, SQLAlchemy 2.1.8 и Alembic 1.20.1. Команды ниже выполняются из корня репозитория в PowerShell. Порт учебного PostgreSQL — **55432**. Убедитесь, что сервер принимает подключения:
+
+```powershell
+pg_isready -h 127.0.0.1 -p 55432
+```
+
+Если это тот же локальный кластер из лабораторной 6 и он остановлен, его можно запустить из текущей папки командой `pg_ctl -D ..\.lab-runtime\verified-pgdata -l ..\.lab-runtime\postgres.log -o "-h 127.0.0.1 -p 55432" -w start`. Для другого экземпляра PostgreSQL используйте его собственные каталог и порт.
+
+**На пустом сервере** откройте `psql -h 127.0.0.1 -p 55432 -U postgres -d postgres`. Создайте отсутствующие роль и базу, затем выйдите командой `\q`:
+
+```sql
+CREATE ROLE catalog_app LOGIN PASSWORD 'change-me';
+CREATE DATABASE course_catalog OWNER catalog_app;
+```
+
+Установите зависимости и создайте локальную конфигурацию при первом запуске:
 
 ```powershell
 python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-fastapi dev main.py
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+Copy-Item .env.example .env
+.\.venv\Scripts\python.exe check_db.py
 ```
 
-Open <http://127.0.0.1:8000/docs> for the interactive documentation.
+В примере используется учебный пароль. Для своего сервера задайте `DATABASE_URL` в локальном `.env`. Значение из окружения имеет приоритет. Для просмотра SQL можно включить `SQL_ECHO=true` локально.
 
-## What was verified
+**Для пустой базы** выполните миграции и заполнение:
 
-- `GET /` returns `{"message":"Course Catalog API is running"}`.
-- `GET /courses` returns all six courses, ordered by likes with `ai-integration` first.
-- `GET /courses?is_elective=true` returns `ai-integration` and `api-design`; `false` returns the four required courses.
-- `GET /courses?sort=title` sorts the courses alphabetically by title.
-- `GET /courses?page=2&page_size=2` returns `web-security` and `backend-fastapi`.
-- `GET /courses/web-security` returns that course; `GET /courses/nope` returns 404 with `{"detail":"Course not found"}`.
-- `GET /docs`, `/redoc`, and `/openapi.json` expose the generated API documentation and schema.
+```powershell
+.\.venv\Scripts\python.exe -m alembic upgrade head
+psql -h 127.0.0.1 -p 55432 -U catalog_app -d course_catalog -v ON_ERROR_STOP=1 -f seed.sql
+.\.venv\Scripts\python.exe check_models.py
+.\.venv\Scripts\python.exe -m alembic check
+```
+
+`seed.sql` предназначен для сброса учебного набора: `TRUNCATE … RESTART IDENTITY` заменяет строки в трёх таблицах. Повторный запуск даёт ровно 6 курсов, 3 студента и 6 записей.
+
+**Для существующей базы Lab 6** сначала сравните её структуру, имена ограничений, индексы и порядок колонок уникальной пары с [ревизией 0001](alembic/versions/0001_create_catalog_tables.py). Если таблицы уже соответствуют 0001, а таблицы версий Alembic ещё нет, выполните `python -m alembic stamp 0001` интерпретатором из .venv. Затем выполните `upgrade head` и `check` как выше. Отметка 0001 пропускает повторное создание существующих таблиц, а 0002 обновляет их с сохранением строк. При таком переходе заполнять базу заново не требуется. На проверенной установке пришлось привести уникальную пару к порядку `(course_id, student_id)`; до изменения была снята резервная копия.
+
+**Обычный запуск уже настроенного проекта:**
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8000
+```
+
+Откройте [Swagger](http://127.0.0.1:8000/docs). Во втором терминале выполните `.\.venv\Scripts\python.exe try_errors.py` на учебном наборе данных. Ожидаемый результат — `5 of 5 as expected`.
+
+## Что изменилось в API
+
+| Маршрут | Что проверить |
+|---|---|
+| `GET /courses` | Фильтры `is_elective` и `level` можно комбинировать. `sort=popular` сортирует по убыванию лайков, `sort=title` — по названию. Второй ключ — id. Страницы задаются через `page` и `page_size`. На начальных данных `?level=beginner` возвращает `ai-integration` и `api-design`. |
+| `GET /courses/{id}` | Ответ содержит описание курса, `isElective`, лайки и новый обязательный `level`. Отсутствующий id даёт 404. |
+| `POST /courses/{id}/like` | Один UPDATE увеличивает счётчик и возвращает курс. Данные сохраняются после перезапуска процесса. |
+| `POST /students` | Принимает, например, `{"name":"Madina Ospanova","email":"madina@example.com"}` и возвращает 201 с новым id. Имя должно содержать минимум два символа, email проходит проверку формата. |
+| `POST /enrollments` | Принимает `{"courseId":"web-security","studentId":3}`, возвращает 201 и момент записи. Сначала создаётся студент, затем его id передаётся этому маршруту. Форме Lab 5 потребуется перейти с `studentName` на `studentId`. |
+| `GET /enrollments` | Два JOIN добавляют к каждой записи `studentName` и `courseTitle`. Результат упорядочен по id записи. |
+| `GET /stats/courses` | LEFT JOIN и `count(Enrollment.id)` сохраняют курсы с нулём записей. На начальных данных счётчики равны 3, 2, 1, 0, 0, 0. |
+
+При повторном email или повторной записи API возвращает 409. Несуществующий курс или студент дают 404. Pydantic отвечает 422 за имя из одного символа. Неизвестное нарушение остаётся серверной ошибкой 500.
+
+## Миграции
+
+Все команды таблицы можно запускать через `.\.venv\Scripts\python.exe -m alembic` вместо `alembic`.
+
+| Команда | Действие |
+|---|---|
+| `alembic upgrade head` | Выполнить недостающие миграции до последней ревизии. |
+| `alembic downgrade -1` | Откатить одну ревизию. При откате 0002 удаляется колонка level вместе со значениями. |
+| `alembic current` | Показать применённую ревизию в базе. |
+| `alembic heads` / `alembic history` | Показать последние ревизии и историю связей между ними. |
+| `alembic revision --autogenerate -m "описание"` | Сформировать черновик по разнице между моделями и базой. Перед применением проверьте код и преобразование данных. |
+| `alembic check` | Проверить изменения, которые Alembic может обнаружить автоматически. Имена ограничений также проверяет `check_models.py`. |
+| `alembic upgrade 0001:0002 --sql` | Получить SQL обновления без применения. |
+| `alembic stamp <ревизия>` | Записать уже существующую версию схемы без выполнения DDL. Для исходной базы Lab 6 это 0001. |
+
+## Журнал экспериментов
+
+Проверки проведены на копии кода и в отдельных базах PostgreSQL. Ошибки воспроизводились намеренно.
+
+| № | Изменение | Результат | Причина | Исправление |
+|---|---|---|---|---|
+| 1 | Заменён шаблон имени UNIQUE | В моделях появились `students_email_unique` и `enrollments_course_id_unique`, в БД остались `students_email_key` и `enrollments_course_id_student_id_key`. | Новый шаблон использовал только первую колонку и другой суффикс. | Возвращён `%(table_name)s_%(column_0_N_name)s_key`. Сверка имён чистая. |
+| 2 | Убран min_length у StudentIn, отправлено имя N | HTTP 500, PostgreSQL вернул `CheckViolation: students_name_check`. Строка не появилась. | Запрос дошёл до CHECK в БД, для него в API нет специального HTTP-ответа. | Восстановлен `Field(min_length=2)`. Клиент получает 422 при проверке тела запроса. |
+| 3 | Ключ словаря заменён на `students_email_uniq` | Повторный email дал HTTP 500 и `UniqueViolation: students_email_key`. | Имя из драйвера отсутствовало в словаре. | Возвращён ключ `students_email_key`, ответ снова 409. |
+| 4 | У title снят NOT NULL, затем отдельно TEXT заменён на varchar(100) | `alembic check` обнаружил `modify_nullable` и `modify_type` для `courses.title`. | Ручные изменения схемы разошлись с моделью. | Восстановлены TEXT и NOT NULL. Проверка прошла. |
+| 5 | Автосгенерированная 0002 добавила `level TEXT NOT NULL` сразу | `NotNullViolation: column "level" of relation "courses" contains null values`; `current` остался 0001. | В шести существующих строках отсутствовало значение level. | Добавлена допускающая NULL колонка, строки заполнены по is_elective, затем установлен NOT NULL. |
+| 6 | Временно выключен `import models` в env.py | Черновик autogenerate предложил `drop_table` для students, courses и enrollments. | Alembic увидел пустую metadata. | Черновик удалён без применения, импорт восстановлен. |
+| 7 | В модель Student добавлен phone без миграции | `Detected added column 'students.phone'`; `alembic check` завершился ошибкой. | Модель описывала отсутствующую колонку. | Экспериментальное поле убрано, проверка чистая. |
+| 8 | От 0002 созданы ветви 0003 и 0004 | `heads` показал две вершины, `upgrade head` вернул `Multiple head revisions`. После merge единственной вершиной стала 0005. | В истории было два возможных продолжения. | Проверен merge, временные ревизии удалены из копии. Итоговая вершина проекта — 0002. |
+
+## Решения
+
+1. Код SQLSTATE сообщает тип нарушения. Например, повторный email и повторная запись на курс оба дают 23505, но причины и сообщения для клиента разные. Драйвер возвращает точное имя ограничения. Приложение перехватывает исключение при commit и вызывает rollback. Предварительный SELECT оставил бы между проверкой и INSERT время, в которое другой запрос мог бы записать то же значение.
+2. При `UPDATE courses SET likes = likes + 1 … RETURNING` PostgreSQL увеличивает текущее значение в самой строке. При двух параллельных лайках второй UPDATE дождётся первого. Если оба процесса заранее прочитают 11 и отдельно запишут 12, одно увеличение потеряется.
+3. Для заполненной таблицы миграция 0002 добавляет допускающую NULL колонку, присваивает элективным курсам `beginner`, остальным `intermediate` и вводит NOT NULL. На пустой таблице те же шаги выполняются без специальных условий.
+
+## Самопроверка миграции 0002
+
+| Проверка | Результат |
+|---|---|
+| Цель и шаги | Да. Меняется только уровень курса. Все три шага выполняются транзакционно. |
+| Данные | Да. В существующем каталоге сохранились все прежние строки и значения. Два курса получили beginner, четыре — intermediate. |
+| Переименования и удаления | Да. При upgrade отсутствуют удаления таблиц, строк или других колонок. |
+| Откат | Да. `downgrade -1` вернул 0001. Удаление колонки теряет вручную изменённые уровни, поэтому для их сохранения при откате нужна копия. |
+| Проверка | Да. Просмотрен SQL, выполнен цикл upgrade → downgrade → upgrade на заполненной копии, пройдена проверка `alembic check`. |
+| История | Да. Цепочка `base → 0001 → 0002` имеет одну вершину. Изменения API, модели, seed и миграция 0002 объединены в одном коммите. |
+| Приложение | Да. CourseOut отдаёт level, GET /courses фильтрует по нему. Проверены совместное использование фильтров и сохранение лайка и записи студента при перезапуске API. |
+
+На отдельной пустой базе применены обе миграции, дважды выполнен seed, открылись Swagger и маршруты API. Скрипт проверки ошибок дал **5 из 5**. После перезапуска API сохранились лайк (11 → 12) и созданная запись студента.
