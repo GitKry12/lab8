@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+import counter
 import problem
 import services
 from db import get_db
@@ -14,6 +15,7 @@ from schemas import CourseOut, CourseStats, EnrollmentDetail, EnrollmentIn, Enro
 
 app = FastAPI(title="Course Catalog API")
 problem.install(app)
+counter.install(app)
 app.add_middleware(
     CORSMiddleware, allow_origins=["http://localhost:3000"],
     allow_methods=["*"], allow_headers=["*"],
